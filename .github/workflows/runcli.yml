@@ -4,7 +4,10 @@
 on: workflow_dispatch
 
 name: Test-CLI
-
+permissions:
+  contents: read
+  pull-requests: write
+  
 jobs:
 
   build-and-deploy:
