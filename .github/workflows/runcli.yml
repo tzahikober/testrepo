@@ -3,7 +3,7 @@
 # on: [push]
 on: workflow_dispatch
 
-name: TestFW
+name: Test-CLI
 
 jobs:
 
