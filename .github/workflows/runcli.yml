@@ -1,0 +1,31 @@
+# File: .github/workflows/workflow.yml
+
+# on: [push]
+on: workflow_dispatch
+
+name: TestFW
+
+jobs:
+
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps: 
+    - name: Login via Az module
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+        enable-AzPSSession: true 
+    - run: |
+        #az account set --subscription "sub-dev"
+        az group list
+        az extension add --name azure-firewall
+        #az network firewall show
+    - name: Test Az PS
+      uses: azure/powershell@v1
+      with:
+        inlineScript: |
+            #Select-AzSubscription -SubscriptionName "sub-dev"
+            #set-azContext -Subscription "sub-dev"
+            #$rg = "rg-ghes-state-dev"
+            Get-azvm
+        azPSVersion: "latest"
