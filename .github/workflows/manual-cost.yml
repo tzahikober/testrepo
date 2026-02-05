@@ -1,0 +1,19 @@
+# File: .github/workflows/workflow.yml
+
+# on: [push]
+on: workflow_dispatch
+
+name: Test-CLI
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get Actions usage
+        run: |
+          # Requires a PAT with admin:org scope
+          curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            https://api.github.com/orgs/YOUR_ORG/settings/billing/actions
