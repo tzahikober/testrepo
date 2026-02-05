@@ -1,0 +1,14 @@
+# .github/workflows/cost-report.yml
+name: Weekly Cost Report
+on:
+  schedule:
+    - cron: '0 9 * * 1'  # Every Monday at 9am
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get Actions usage
+        run: |
+          # Requires a PAT with admin:org scope
+          curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            https://api.github.com/orgs/YOUR_ORG/settings/billing/actions
