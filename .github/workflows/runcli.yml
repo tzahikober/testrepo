@@ -3,7 +3,7 @@
 # on: [push]
 on: workflow_dispatch
 
-name: Test-CLI
+name: Test-CLI-RSG
 permissions:
   contents: read
   pull-requests: write
