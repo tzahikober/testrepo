@@ -1,81 +1,83 @@
-name: Check Reminders
+name: Issue Reminder
 
 on:
-  schedule:
-    - cron: '0 9 * * *'  # Run daily at 9 AM UTC
-  workflow_dispatch:  # Allow manual trigger for testing
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: 'Issue number to remind about'
+        required: true
+        type: number
+      remind_in:
+        description: 'Remind me in'
+        required: true
+        type: choice
+        options:
+          - '3 days'
+          - '1 week'
+          - '2 weeks'
+          - '1 month'
 
 jobs:
-  check-reminders:
+  set-reminder:
     runs-on: ubuntu-latest
     steps:
-      - name: Check for due reminders
+      - name: Add reminder label
         uses: actions/github-script@v7
         with:
           script: |
-            const now = new Date();
-            
-            // Search for issues with reminder label
-            const issues = await github.rest.issues.listForRepo({
+            await github.rest.issues.addLabels({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              labels: '⏰ reminder-set',
-              state: 'all',
-              per_page: 100
+              issue_number: ${{ inputs.issue_number }},
+              labels: ['⏰ reminder-set']
             });
             
-            for (const issue of issues.data) {
-              // Get all comments on the issue
-              const comments = await github.rest.issues.listComments({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: issue.number
-              });
-              
-              // Find reminder metadata
-              for (const comment of comments.data) {
-                const match = comment.body.match(/<!-- reminder:(.+?):(.+?) -->/);
-                if (match) {
-                  const reminderDate = new Date(match[1]);
-                  const user = match[2];
-                  
-                  // Check if reminder is due
-                  if (now >= reminderDate) {
-                    await github.rest.issues.createComment({
-                      owner: context.repo.owner,
-                      repo: context.repo.repo,
-                      issue_number: issue.number,
-                      body: `🔔 Hey @${user}! You asked to be reminded about this issue.\n\nIs there any update here?`
-                    });
-                    
-                    // Remove the reminder label
-                    await github.rest.issues.removeLabel({
-                      owner: context.repo.owner,
-                      repo: context.repo.repo,
-                      issue_number: issue.number,
-                      name: '⏰ reminder-set'
-                    }).catch(() => {});
-                    
-                    // Delete the metadata comment
-                    await github.rest.issues.deleteComment({
-                      owner: context.repo.owner,
-                      repo: context.repo.repo,
-                      comment_id: comment.id
-                    });
-                  }
-                }
-              }
-            }
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: ${{ inputs.issue_number }},
+              body: `⏰ Reminder set for **${{ inputs.remind_in }}** by @${context.actor}`
+            });
 
+      - name: Calculate reminder date
+        id: date
+        run: |
+          case "${{ inputs.remind_in }}" in
+            "3 days")
+              DAYS=3
+              ;;
+            "1 week")
+              DAYS=7
+              ;;
+            "2 weeks")
+              DAYS=14
+              ;;
+            "1 month")
+              DAYS=30
+              ;;
+          esac
+          
+          if [[ "$OSTYPE" == "darwin"* ]]; then
+            REMIND_DATE=$(date -v+${DAYS}d -u +"%Y-%m-%dT%H:%M:%SZ")
+          else
+            REMIND_DATE=$(date -u -d "+${DAYS} days" +"%Y-%m-%dT%H:%M:%SZ")
+          fi
+          
+          echo "remind_date=$REMIND_DATE" >> $GITHUB_OUTPUT
+          echo "Reminder will trigger at: $REMIND_DATE"
 
-## How to Use It
-
-# 1. Commit both workflow files to your repo
-# 2. Create the `⏰ reminder-set` label in your repo (Settings → Labels)
-# 3. Go to Actions tab → "Issue Reminder" workflow
-# 4. Click "Run workflow"
-# 5. Enter the issue number and select when to be reminded
-# 6. Done! You'll get a comment when the reminder is due
-
-## What You'll See
-
+      - name: Schedule reminder
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const reminderDate = '${{ steps.date.outputs.remind_date }}';
+            const issueNumber = ${{ inputs.issue_number }};
+            const actor = context.actor;
+            
+            // Store reminder data in issue comment (hidden metadata)
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber,
+              body: `<!-- reminder:${reminderDate}:${actor} -->\n🔔 I'll remind you about this on ${new Date(reminderDate).toLocaleDateString()}`
+            });
