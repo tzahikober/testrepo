@@ -16,6 +16,9 @@ on:
           - '3 days'
           - '1 weeks'
           - '1 month'
+permissions:
+  issues: write
+  contents: read
 
 jobs:
   set-reminder:
