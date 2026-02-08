@@ -66,7 +66,7 @@ jobs:
                 }
               }
             }
-```
+
 
 ## How to Use It
 
@@ -79,14 +79,3 @@ jobs:
 
 ## What You'll See
 
-When you set a reminder:
-```
-⏰ Reminder set for 1 week by @yourname
-🔔 I'll remind you about this on 2/15/2026
-```
-
-When the reminder triggers (at 9 AM UTC daily):
-```
-🔔 Hey @yourname! You asked to be reminded about this issue.
-
-Is there any update here?
