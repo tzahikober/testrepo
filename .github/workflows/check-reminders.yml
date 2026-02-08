@@ -5,6 +5,10 @@ on:
     - cron: '0 9 * * *'  # Run daily at 9 AM UTC
   workflow_dispatch:  # Allow manual trigger for testing
 
+permissions:
+  issues: write
+  contents: read
+
 jobs:
   check-reminders:
     runs-on: ubuntu-latest
