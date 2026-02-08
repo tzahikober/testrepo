@@ -1,0 +1,92 @@
+name: Check Reminders
+
+on:
+  schedule:
+    - cron: '0 9 * * *'  # Run daily at 9 AM UTC
+  workflow_dispatch:  # Allow manual trigger for testing
+
+jobs:
+  check-reminders:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check for due reminders
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const now = new Date();
+            
+            // Search for issues with reminder label
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: '⏰ reminder-set',
+              state: 'all',
+              per_page: 100
+            });
+            
+            for (const issue of issues.data) {
+              // Get all comments on the issue
+              const comments = await github.rest.issues.listComments({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number
+              });
+              
+              // Find reminder metadata
+              for (const comment of comments.data) {
+                const match = comment.body.match(/<!-- reminder:(.+?):(.+?) -->/);
+                if (match) {
+                  const reminderDate = new Date(match[1]);
+                  const user = match[2];
+                  
+                  // Check if reminder is due
+                  if (now >= reminderDate) {
+                    await github.rest.issues.createComment({
+                      owner: context.repo.owner,
+                      repo: context.repo.repo,
+                      issue_number: issue.number,
+                      body: `🔔 Hey @${user}! You asked to be reminded about this issue.\n\nIs there any update here?`
+                    });
+                    
+                    // Remove the reminder label
+                    await github.rest.issues.removeLabel({
+                      owner: context.repo.owner,
+                      repo: context.repo.repo,
+                      issue_number: issue.number,
+                      name: '⏰ reminder-set'
+                    }).catch(() => {});
+                    
+                    // Delete the metadata comment
+                    await github.rest.issues.deleteComment({
+                      owner: context.repo.owner,
+                      repo: context.repo.repo,
+                      comment_id: comment.id
+                    });
+                  }
+                }
+              }
+            }
+```
+
+## How to Use It
+
+1. Commit both workflow files to your repo
+2. Create the `⏰ reminder-set` label in your repo (Settings → Labels)
+3. Go to Actions tab → "Issue Reminder" workflow
+4. Click "Run workflow"
+5. Enter the issue number and select when to be reminded
+6. Done! You'll get a comment when the reminder is due
+
+## What You'll See
+
+When you set a reminder:
+```
+⏰ Reminder set for 1 week by @yourname
+🔔 I'll remind you about this on 2/15/2026
+```
+
+When the reminder triggers (at 9 AM UTC daily):
+```
+🔔 Hey @yourname! You asked to be reminded about this issue.
+
+Is there any update here?
