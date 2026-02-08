@@ -5,6 +5,7 @@ on:
     - cron: '0 9 * * *'  # Run daily at 9 AM UTC
   workflow_dispatch:  # Allow manual trigger for testing
 
+# The workflow needs permissions to modify issues. Add this to both workflow files at the top level (same level as on:)
 permissions:
   issues: write
   contents: read
