@@ -12,6 +12,7 @@ on:
         required: true
         type: choice
         options:
+          - '1 hour'
           - '1 days'
           - '3 days'
           - '1 weeks'
