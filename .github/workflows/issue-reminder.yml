@@ -70,12 +70,12 @@ jobs:
 
 ## How to Use It
 
-1. Commit both workflow files to your repo
-2. Create the `⏰ reminder-set` label in your repo (Settings → Labels)
-3. Go to Actions tab → "Issue Reminder" workflow
-4. Click "Run workflow"
-5. Enter the issue number and select when to be reminded
-6. Done! You'll get a comment when the reminder is due
+# 1. Commit both workflow files to your repo
+# 2. Create the `⏰ reminder-set` label in your repo (Settings → Labels)
+# 3. Go to Actions tab → "Issue Reminder" workflow
+# 4. Click "Run workflow"
+# 5. Enter the issue number and select when to be reminded
+# 6. Done! You'll get a comment when the reminder is due
 
 ## What You'll See
 
