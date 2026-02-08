@@ -12,9 +12,9 @@ on:
         required: true
         type: choice
         options:
+          - '1 days'
           - '3 days'
-          - '1 week'
-          - '2 weeks'
+          - '1 weeks'
           - '1 month'
 
 jobs:
