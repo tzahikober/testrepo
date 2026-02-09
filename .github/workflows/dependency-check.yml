@@ -1,0 +1,34 @@
+name: dependency-check
+
+on:
+  schedule:
+    - cron: "0 2 * * 1"   # every Monday at 02:00 UTC
+  workflow_dispatch:       # manual trigger
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v4   # or setup-python
+
+      - name: Install Dependencies
+        run: npm ci                   # or pip install -r
+
+      - name: Check For Updates
+        run: npm outdated             # or pip list -o
+
+      - name: Create Update Branch
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git checkout -b auto/deps
+          npm update                    # or equivalent
+          git commit -am "chore: update deps"
+
+      - name: Push & Create PR
+        uses: peter-evans/create-pull-request@v5
+        with:
+          title: "chore: deps update"
+          labels: "dependencies, auto-update"
+          branch: "auto/deps"
