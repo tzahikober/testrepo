@@ -1,9 +1,9 @@
 name: dependency-check
-
-on:
-  schedule:
-    - cron: "0 2 * * 1"   # every Monday at 02:00 UTC
-  workflow_dispatch:       # manual trigger
+on: workflow_dispatch
+# on:
+#   schedule:
+#     - cron: "0 2 * * 1"   # every Monday at 02:00 UTC
+#   workflow_dispatch:       # manual trigger
 
 jobs:
   check:
